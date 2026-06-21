@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grupo 3: The Jackson 5 · Método de la Secante</title>
+
+    <!-- SheetJS para exportar Excel con fórmulas reales -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <style>
+        /* =========================================================
+           VARIABLES CSS (modo claro/oscuro)
+           ========================================================= */
+        :root {
+            --bg: #f0f2f5;
+            --text: #1d1d1f;
+            --primary: #0071e3;
+            --primary-dark: #005bb5;
+            --card: #ffffff;
+            --border: #d2d2d7;
+            --muted: #86868b;
+            --success: #34c759;
+            --danger: #ff3b30;
+            --warning: #ff9500;
+            --radius: 16px;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --transition: 0.25s ease;
+        }
+
+        [data-theme="dark"] {
+            --bg: #0a0a0f;
+            --text: #f5f5f7;
+            --primary: #0a84ff;
+            --primary-dark: #409cff;
+            --card: #1c1c1e;
+            --border: #38383a;
+            --muted: #98989d;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        /* =========================================================
+           RESET Y BASE
+           ========================================================= */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 24px;
+            min-height: 100vh;
+            transition: background var(--transition), color var(--transition);
+        }
+
+        /* =========================================================
+           HEADER
+           ========================================================= */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 28px;
+            margin-bottom: 30px;
+            background: var(--card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            transition: background var(--transition);
+            flex-wrap: wrap;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .header .subtitle {
+            color: var(--muted);
+            font-size: 14px;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .theme-btn {
+            background: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all var(--transition);
+        }
+
+        .theme-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+
+        .help-toggle {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all var(--transition);
+        }
+
+        .help-toggle:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0, 113, 227, 0.3); }
+
+        /* =========================================================
+           PANEL DE AYUDA
+           ========================================================= */
+        .help-panel {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 20px 28px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow);
+            display: none;
+            transition: all var(--transition);
+            border-left: 4px solid var(--primary);
+        }
+
+        .help-panel.open { display: block; }
+        .help-panel h3 { margin-bottom: 10px; color: var(--primary); }
+        .help-panel p, .help-panel li { color: var(--text); line-height: 1.6; }
+        .help-panel ul { padding-left: 20px; }
+
+        /* =========================================================
+           LAYOUT PRINCIPAL
+           ========================================================= */
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 1000px) { .container { grid-template-columns: 1fr; } }
+
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 28px;
+            box-shadow: var(--shadow);
+            transition: background var(--transition), box-shadow var(--transition);
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--muted);
+        }
+
+        /* =========================================================
+           FORMULARIOS
+           ========================================================= */
+        .form-group { margin-bottom: 16px; }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 12px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--bg);
+            color: var(--text);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-weight: 600;
+            outline: none;
+            transition: all var(--transition);
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15);
+        }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+        /* =========================================================
+           PRESETS
+           ========================================================= */
+        .presets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 18px;
+            padding: 12px;
+            background: var(--bg);
+            border-radius: 12px;
+            transition: background var(--transition);
+        }
+
+        .presets-label {
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 600;
+            margin-right: 6px;
+            align-self: center;
+        }
+
+        .preset-btn {
+            background: var(--card);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-family: monospace;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .preset-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: scale(1.03);
+        }
+
+        /* =========================================================
+           TECLADO CIENTÍFICO
+           ========================================================= */
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            margin: 16px 0;
+        }
+
+        .key {
+            background: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.12s;
+            user-select: none;
+            min-height: 46px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'SF Mono', monospace;
+        }
+
+        .key:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); }
+        .key:active { transform: translateY(1px); }
+
+        .key.func { background: linear-gradient(135deg, #34c759, #248a3d); color: white; border: none; font-size: 12px; }
+        .key.op { background: linear-gradient(135deg, #ff9500, #cc7700); color: white; border: none; }
+        .key.var { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; }
+        .key.action { background: linear-gradient(135deg, #ff3b30, #cc2626); color: white; border: none; }
+        .key.const { background: linear-gradient(135deg, #af52de, #8944ab); color: white; border: none; }
+        .key.span3 { grid-column: span 3; }
+        .key.span2 { grid-column: span 2; }
+
+        /* =========================================================
+           BOTÓN PRINCIPAL
+           ========================================================= */
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            box-shadow: 0 4px 20px rgba(0, 113, 227, 0.35);
+            transition: all var(--transition);
+        }
+
+        .btn-primary:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0, 113, 227, 0.45); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .btn-export {
+            background: linear-gradient(135deg, var(--success), #248a3d);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 14px;
+            display: none;
+            transition: all var(--transition);
+            font-size: 15px;
+        }
+
+        .btn-export:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(52, 199, 89, 0.35); }
+
+        /* =========================================================
+           BADGES / ESTADÍSTICAS
+           ========================================================= */
+        .badges { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+
+        .badge {
+            padding: 10px 16px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: background var(--transition);
+            flex: 1 0 auto;
+        }
+
+        .badge.success { border-color: var(--success); color: var(--success); background: rgba(52, 199, 89, 0.12); }
+        .badge.warning { border-color: var(--warning); color: var(--warning); background: rgba(255, 149, 0, 0.12); }
+        .badge.info { border-color: var(--primary); color: var(--primary); background: rgba(0, 113, 227, 0.12); }
+        .badge.danger { border-color: var(--danger); color: var(--danger); background: rgba(255, 59, 48, 0.12); }
+
+        /* =========================================================
+           STATUS
+           ========================================================= */
+        .status {
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-top: 14px;
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+            transition: all var(--transition);
+        }
+
+        .status.error { background: rgba(255, 59, 48, 0.12); color: var(--danger); border: 1px solid var(--danger); display: block; }
+        .status.success { background: rgba(52, 199, 89, 0.12); color: var(--success); border: 1px solid var(--success); display: block; }
+
+        /* =========================================================
+           TABLA
+           ========================================================= */
+        .table-wrap {
+            overflow-x: auto;
+            margin-top: 18px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            max-height: 420px;
+            overflow-y: auto;
+        }
+
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+        th, td {
+            padding: 12px 14px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            font-family: 'SF Mono', Monaco, monospace;
+        }
+
+        th {
+            background: var(--bg);
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--muted);
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        tr:nth-child(even) { background: rgba(0, 0, 0, 0.02); }
+        [data-theme="dark"] tr:nth-child(even) { background: rgba(255, 255, 255, 0.02); }
+        tr.final { background: rgba(52, 199, 89, 0.18) !important; font-weight: 700; }
+
+        /* =========================================================
+           CONTROLES DE RANGO
+           ========================================================= */
+        .range-controls-wrapper { margin-top: 10px; margin-bottom: 10px; }
+
+        .range-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--muted);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .range-toggle input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary); }
+
+        .range-fields {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background: var(--bg);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .range-fields.visible { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .range-fields .form-group { margin-bottom: 0; }
+        .range-fields label { font-size: 10px; }
+        .range-fields input { padding: 8px 10px; font-size: 13px; }
+
+        /* =========================================================
+           ANIMACIÓN DEL MÉTODO (CORREGIDA)
+           ========================================================= */
+        .anim-section {
+            margin-top: 20px;
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .anim-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .anim-canvas-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            background: var(--card);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        #canvas-anim { width: 100%; height: 100%; display: block; }
+
+        .anim-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+            align-items: center;
+        }
+
+        .anim-btn {
+            background: var(--card);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .anim-btn:hover:not(:disabled) {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .anim-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .anim-btn.active { background: var(--success); color: white; border-color: var(--success); }
+
+        .anim-speed-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .anim-speed-label {
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .anim-speed-slider {
+            width: 120px;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--border);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .anim-speed-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .anim-speed-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .anim-info-panel {
+            margin-top: 12px;
+            background: var(--card);
+            border-radius: 10px;
+            padding: 12px;
+            border: 1px solid var(--border);
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 12px;
+        }
+
+        .anim-info-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .anim-info-item {
+            background: var(--bg);
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        .anim-info-label {
+            font-size: 9px;
+            color: var(--muted);
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .anim-info-value { font-weight: 700; color: var(--text); word-break: break-all; }
+
+        @media (max-width: 700px) {
+            .anim-info-grid { grid-template-columns: repeat(2, 1fr); }
+            .anim-speed-control { width: 100%; margin-left: 0; margin-top: 8px; }
+            .header { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .header-actions { width: 100%; justify-content: flex-start; }
+            .form-row { grid-template-columns: 1fr; }
+            .keypad { grid-template-columns: repeat(5, 1fr); }
+            .badges { flex-direction: column; }
+            .range-fields.visible { grid-template-columns: 1fr; }
+        }
+
+        /* =========================================================
+           GRÁFICAS
+           ========================================================= */
+        .graph-box { margin-bottom: 20px; }
+
+        .graph-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .graph-label .range-controls {
+            display: flex;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 400;
+            color: var(--text);
+        }
+
+        canvas {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            width: 100%;
+            height: 220px;
+            border-radius: 12px;
+            display: block;
+            transition: background var(--transition);
+        }
+
+        /* =========================================================
+           SHORTCUTS
+           ========================================================= */
+        .shortcuts {
+            margin-top: 18px;
+            padding: 12px 16px;
+            background: var(--bg);
+            border-radius: 10px;
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.9;
+            transition: background var(--transition);
+        }
+
+        .shortcuts kbd {
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <div class="header">
+        <div>
+            <h1>🧮 Método de la Secante</h1>
+            <div class="subtitle">Grupo 3: The Jackson 5 · Análisis Numérico</div>
+        </div>
+        <div class="header-actions">
+            <button class="help-toggle" onclick="toggleHelp()">❓ Ayuda</button>
+            <button class="theme-btn" onclick="toggleTheme()">
+                <span id="theme-icon">🌓</span> Modo
+            </button>
+        </div>
+    </div>
+
+    <!-- PANEL DE AYUDA -->
+    <div id="helpPanel" class="help-panel">
+        <h3>📖 ¿Cómo funciona el método de la secante?</h3>
+        <p>
+            El <strong>método de la secante</strong> es un algoritmo iterativo para encontrar raíces de ecuaciones
+            no lineales. A diferencia del método de Newton, no requiere calcular la derivada, sino que aproxima
+            la pendiente usando dos puntos anteriores.
+        </p>
+        <ul>
+            <li><strong>Fórmula:</strong> xₙ = xₙ₋₁ – f(xₙ₋₁) · (xₙ₋₁ – xₙ₋₂) / (f(xₙ₋₁) – f(xₙ₋₂))</li>
+            <li><strong>Convergencia:</strong> Superlineal, orden ≈ 1.618 (número áureo).</li>
+            <li><strong>Requisitos:</strong> Dos valores iniciales x₀ y x₁.</li>
+            <li><strong>Criterio de parada:</strong> Error absoluto |xₙ – xₙ₋₁| &lt; tolerancia o máximo de iteraciones.</li>
+        </ul>
+        <p style="margin-top: 10px;">
+            💡 <strong>Consejos:</strong> Elige valores iniciales cercanos a la raíz. Si el método no converge, prueba
+            con otros valores o con una función diferente.
+        </p>
+    </div>
+
+    <!-- LAYOUT PRINCIPAL -->
+    <div class="container">
+
+        <!-- COLUMNA IZQUIERDA: ENTRADA -->
+        <div class="card">
+            <div class="card-title">📝 Configuración</div>
+
+            <!-- Presets -->
+            <div class="presets">
+                <span class="presets-label">Rápidos:</span>
+                <button class="preset-btn" onclick="setPreset('cos(x)-x')">cos(x)-x</button>
+                <button class="preset-btn" onclick="setPreset('x^2-2')">x²-2</button>
+                <button class="preset-btn" onclick="setPreset('x^3-x-1')">x³-x-1</button>
+                <button class="preset-btn" onclick="setPreset('exp(-x)-x')">e⁻ˣ-x</button>
+                <button class="preset-btn" onclick="setPreset('ln(x)-1')">ln(x)-1</button>
+                <button class="preset-btn" onclick="setPreset('sin(x)-x/2')">sin(x)-x/2</button>
+                <button class="preset-btn" onclick="setPreset('tan(x)-2')">tan(x)-2</button>
+                <button class="preset-btn" onclick="setPreset('x^5-3*x+1')">x⁵-3x+1</button>
+            </div>
+
+            <!-- Función -->
+            <div class="form-group">
+                <label>Función f(x)</label>
+                <input type="text" id="funcion" class="input-focus" value="ln(x)-1" />
+            </div>
+
+            <!-- Valores iniciales -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label>x₀ inicial</label>
+                    <input type="number" id="x0" class="input-focus" value="0.5" step="any" />
+                </div>
+                <div class="form-group">
+                    <label>x₁ inicial</label>
+                    <input type="number" id="x1" class="input-focus" value="1.5" step="any" />
+                </div>
+            </div>
+
+            <!-- Tolerancia e iteraciones -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tolerancia (ε)</label>
+                    <input type="number" id="tol" class="input-focus" value="0.0001" step="any" />
+                </div>
+                <div class="form-group">
+                    <label>Máx. iteraciones</label>
+                    <input type="number" id="maxiter" class="input-focus" value="25" />
+                </div>
+            </div>
+
+            <!-- CONTROLES DE RANGO -->
+            <div class="range-controls-wrapper">
+                <label class="range-toggle">
+                    <input type="checkbox" id="toggleRange" onchange="toggleRangeFields()" />
+                    Mostrar controles de rango
+                </label>
+                <div id="rangeFields" class="range-fields">
+                    <div class="form-group">
+                        <label>Rango X min</label>
+                        <input type="number" id="xmin" value="-3" step="0.5" />
+                    </div>
+                    <div class="form-group">
+                        <label>Rango X max</label>
+                        <input type="number" id="xmax" value="3" step="0.5" />
+                    </div>
+                    <div class="form-group">
+                        <label>Rango Y max</label>
+                        <input type="number" id="ymax" value="5" step="1" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Teclado científico -->
+            <div class="keypad">
+                <button class="key func" onclick="tecla('sin(')">sin</button>
+                <button class="key func" onclick="tecla('cos(')">cos</button>
+                <button class="key func" onclick="tecla('tan(')">tan</button>
+                <button class="key func" onclick="tecla('asin(')">asin</button>
+                <button class="key func" onclick="tecla('acos(')">acos</button>
+                <button class="key func" onclick="tecla('atan(')">atan</button>
+                <button class="key func" onclick="tecla('abs(')">|x|</button>
+
+                <button class="key func" onclick="tecla('ln(')">ln</button>
+                <button class="key func" onclick="tecla('log10(')">log₁₀</button>
+                <button class="key func" onclick="tecla('log2(')">log₂</button>
+                <button class="key func" onclick="tecla('sqrt(')">√</button>
+                <button class="key func" onclick="tecla('exp(')">eˣ</button>
+                <button class="key func" onclick="tecla('fact(')">n!</button>
+                <button class="key func" onclick="tecla('1/')">1/x</button>
+
+                <button class="key func" onclick="tecla('sinh(')">sinh</button>
+                <button class="key func" onclick="tecla('cosh(')">cosh</button>
+                <button class="key func" onclick="tecla('tanh(')">tanh</button>
+                <button class="key const" onclick="tecla('π')">π</button>
+                <button class="key const" onclick="tecla('e')">e</button>
+                <button class="key const" onclick="tecla('π/2')">π/2</button>
+                <button class="key const" onclick="tecla('2*π')">2π</button>
+
+                <button class="key var" onclick="tecla('^2')">x²</button>
+                <button class="key var" onclick="tecla('^3')">x³</button>
+                <button class="key var" onclick="tecla('^')">xʸ</button>
+                <button class="key var" onclick="tecla('10^')">10ˣ</button>
+                <button class="key" onclick="tecla('7')">7</button>
+                <button class="key" onclick="tecla('8')">8</button>
+                <button class="key" onclick="tecla('9')">9</button>
+
+                <button class="key" onclick="tecla('(')">(</button>
+                <button class="key" onclick="tecla(')')">)</button>
+                <button class="key op" onclick="tecla('/')">÷</button>
+                <button class="key op" onclick="tecla('*')">×</button>
+                <button class="key" onclick="tecla('4')">4</button>
+                <button class="key" onclick="tecla('5')">5</button>
+                <button class="key" onclick="tecla('6')">6</button>
+
+                <button class="key var" onclick="tecla('x')">x</button>
+                <button class="key" onclick="tecla(',')">,</button>
+                <button class="key op" onclick="tecla('+')">+</button>
+                <button class="key op" onclick="tecla('-')">−</button>
+                <button class="key" onclick="tecla('1')">1</button>
+                <button class="key" onclick="tecla('2')">2</button>
+                <button class="key" onclick="tecla('3')">3</button>
+
+                <button class="key action" onclick="tecla('DEL')">⌫</button>
+                <button class="key action" onclick="tecla('AC')">AC</button>
+                <button class="key" onclick="tecla('.')">.</button>
+                <button class="key" onclick="tecla('0')" style="grid-column: span 4;">0</button>
+            </div>
+
+            <button class="btn-primary" id="btn-calc" onclick="calcular()">
+                🚀 Calcular Raíz
+            </button>
+
+            <div class="badges">
+                <div class="badge info" id="badge-funcion">f(x) = ln(x)-1</div>
+                <div class="badge info" id="badge-iniciales">x₀=0.5, x₁=1.5</div>
+                <div class="badge warning" id="badge-tol">Tol: 0.0001</div>
+                <div class="badge warning" id="badge-maxiter">Max iter: 25</div>
+            </div>
+
+            <div class="status" id="status"></div>
+
+            <button class="btn-export" id="btn-export" onclick="exportarExcel()">
+                📤 Exportar a Excel
+            </button>
+        </div>
+
+        <!-- COLUMNA DERECHA: RESULTADOS -->
+        <div class="card">
+            <div class="card-title">📊 Resultados</div>
+
+            <div class="graph-box">
+                <div class="graph-label">
+                    Gráfica de f(x)
+                    <div class="range-controls">
+                        <span id="range-display">[-3, 3]</span>
+                    </div>
+                </div>
+                <canvas id="grafica"></canvas>
+            </div>
+
+            <div class="table-wrap">
+                <table id="tabla-resultados">
+                    <thead>
+                        <tr>
+                            <th>n</th>
+                            <th>x<sub>n-1</sub></th>
+                            <th>x<sub>n</sub></th>
+                            <th>f(x<sub>n-1</sub>)</th>
+                            <th>f(x<sub>n</sub>)</th>
+                            <th>x<sub>n+1</sub></th>
+                            <th>f(x<sub>n+1</sub>)</th>
+                            <th>Error Abs.</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-resultados">
+                        <tr>
+                            <td colspan="8">Ingrese los datos y presione "Calcular Raíz"</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- SECCIÓN DE ANIMACIÓN -->
+            <div class="anim-section">
+                <div class="anim-title">🎬 Animación del Método</div>
+                <div class="anim-canvas-container">
+                    <canvas id="canvas-anim"></canvas>
+                </div>
+                <div class="anim-controls">
+                    <button class="anim-btn" id="play-btn" onclick="startAnimation()">
+                        ▶️ Iniciar
+                    </button>
+                    <button class="anim-btn" id="pause-btn" onclick="pauseAnimation()" disabled>
+                        ⏸️ Pausar
+                    </button>
+                    <button class="anim-btn" id="next-btn" onclick="nextStep()">
+                        ⏭️ Siguiente
+                    </button>
+                    <button class="anim-btn" id="prev-btn" onclick="prevStep()">
+                        ⏮️ Anterior
+                    </button>
+                    <button class="anim-btn" id="reset-btn" onclick="resetAnimation()">
+                        🔄 Reiniciar
+                    </button>
+                    <div class="anim-speed-control">
+                        <span class="anim-speed-label">Velocidad:</span>
+                        <input type="range" min="100" max="2000" value="500" class="anim-speed-slider" id="speedSlider" onchange="updateAnimationSpeed()">
+                    </div>
+                </div>
+                <div class="anim-info-panel">
+                    <div class="anim-info-grid">
+                        <div class="anim-info-item">
+                            <div class="anim-info-label">Iteración Actual</div>
+                            <div class="anim-info-value" id="anim-step">-</div>
+                        </div>
+                        <div class="anim-info-item">
+                            <div class="anim-info-label">x<sub>n-1</sub></div>
+                            <div class="anim-info-value" id="anim-xnm1">-</div>
+                        </div>
+                        <div class="anim-info-item">
+                            <div class="anim-info-label">x<sub>n</sub></div>
+                            <div class="anim-info-value" id="anim-xn">-</div>
+                        </div>
+                        <div class="anim-info-item">
+                            <div class="anim-info-label">x<sub>n+1</sub></div>
+                            <div class="anim-info-value" id="anim-xnp1">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="shortcuts">
+        🔥 Atajos de teclado: <kbd>Ctrl+Enter</kbd> para calcular, <kbd>Ctrl+E</kbd> para exportar, <kbd>Ctrl+H</kbd>
+        para ayuda, <kbd>Ctrl+T</kbd> para cambiar tema.
+    </div>
+
+    <script>
+        // Estado global de la aplicación
+        let estadoApp = {
+            funcion: 'ln(x)-1',
+            x0: 0.5,
+            x1: 1.5,
+            tol: 0.0001,
+            maxiter: 25,
+            resultados: [],
+            grafico: null,
+            xmin: -3,
+            xmax: 3,
+            ymax: 5,
+            modoOscuro: false,
+            ultimosDatosGrafico: { xMin: -3, xMax: 3, yMax: 5 },
+            historialResultados: [], // Para la animación
+            animacionActiva: false,
+            animacionId: null,
+            indiceAnimacion: -1, // Empieza en -1 (sin nada dibujado)
+            velocidadAnimacion: 500, // ms entre pasos
+            contextoAnimacion: null,
+            canvasAnimacion: null
+        };
+
+        // Función para evaluar la expresión matemática
+        function evaluarFuncion(expr, x) {
+            expr = expr.replace(/x/g, `(${x})`);
+            expr = expr.replace(/\^/g, '**');
+            expr = expr.replace(/sin\(/g, 'Math.sin(');
+            expr = expr.replace(/cos\(/g, 'Math.cos(');
+            expr = expr.replace(/tan\(/g, 'Math.tan(');
+            expr = expr.replace(/asin\(/g, 'Math.asin(');
+            expr = expr.replace(/acos\(/g, 'Math.acos(');
+            expr = expr.replace(/atan\(/g, 'Math.atan(');
+            expr = expr.replace(/sqrt\(/g, 'Math.sqrt(');
+            expr = expr.replace(/abs\(/g, 'Math.abs(');
+            expr = expr.replace(/ln\(/g, 'Math.log(');
+            expr = expr.replace(/log10\(/g, 'Math.log10(');
+            expr = expr.replace(/log2\(/g, 'Math.log2(');
+            expr = expr.replace(/exp\(/g, 'Math.exp(');
+            expr = expr.replace(/sinh\(/g, 'Math.sinh(');
+            expr = expr.replace(/cosh\(/g, 'Math.cosh(');
+            expr = expr.replace(/tanh\(/g, 'Math.tanh(');
+            expr = expr.replace(/π/g, 'Math.PI');
+            expr = expr.replace(/e(?![xp])/g, 'Math.E'); // Evita reemplazar 'e' en 'exp'
+            try {
+                return eval(expr);
+            } catch (e) {
+                console.error("Error evaluando la expresión:", e.message);
+                throw new Error(`Error en la función: ${e.message}`);
+            }
+        }
+
+        // Método de la Secante
+        function metodoSecante(f, x0, x1, tol, maxiter) {
+            let xn_ant = parseFloat(x0);
+            let xn = parseFloat(x1);
+            let fxn_ant = evaluarFuncion(f, xn_ant);
+            let fxn = evaluarFuncion(f, xn);
+            let resultados = [];
+
+            if (isNaN(xn_ant) || isNaN(xn)) throw new Error("x0 o x1 no son números válidos.");
+            if (isNaN(fxn_ant) || isNaN(fxn)) throw new Error("La función no está definida en x0 o x1.");
+
+            // Iteración 0 (solo muestra x0)
+            resultados.push({
+                n: 0,
+                xnm1: NaN,
+                xn: xn_ant,
+                fxnm1: NaN,
+                fxn: fxn_ant,
+                xnp1: NaN,
+                fxnp1: NaN,
+                error: Infinity
+            });
+
+            // Iteración 1 (muestra x0 y x1)
+            resultados.push({
+                n: 1,
+                xnm1: xn_ant,
+                xn: xn,
+                fxnm1: fxn_ant,
+                fxn: fxn,
+                xnp1: NaN,
+                fxnp1: NaN,
+                error: Math.abs(xn - xn_ant)
+            });
+
+            for (let i = 2; i <= maxiter; i++) {
+                if (fxn === fxn_ant) {
+                    throw new Error("División por cero: f(xn) - f(xn-1) = 0. Pruebe con otros valores iniciales.");
+                }
+                let denominador = fxn - fxn_ant;
+                if (Math.abs(denominador) < Number.EPSILON) {
+                    throw new Error("División por cero detectada.");
+                }
+                let x_sig = xn - (fxn * (xn - xn_ant)) / denominador;
+                let fx_sig = evaluarFuncion(f, x_sig);
+
+                let error = Math.abs(x_sig - xn);
+
+                resultados.push({
+                    n: i,
+                    xnm1: xn_ant,
+                    xn: xn,
+                    fxnm1: fxn_ant,
+                    fxn: fxn,
+                    xnp1: x_sig,
+                    fxnp1: fx_sig,
+                    error: error
+                });
+
+                if (error < tol) {
+                    let ultimaFila = resultados[resultados.length - 1];
+                    ultimaFila.esFinal = true;
+                    break;
+                }
+
+                xn_ant = xn;
+                xn = x_sig;
+                fxn_ant = fxn;
+                fxn = fx_sig;
+            }
+
+            return resultados;
+        }
+
+        // Calcular y actualizar tabla y gráfico
+        function calcular() {
+            try {
+                estadoApp.funcion = document.getElementById('funcion').value.trim();
+                estadoApp.x0 = parseFloat(document.getElementById('x0').value);
+                estadoApp.x1 = parseFloat(document.getElementById('x1').value);
+                estadoApp.tol = parseFloat(document.getElementById('tol').value);
+                estadoApp.maxiter = parseInt(document.getElementById('maxiter').value);
+                estadoApp.xmin = parseFloat(document.getElementById('xmin').value);
+                estadoApp.xmax = parseFloat(document.getElementById('xmax').value);
+                estadoApp.ymax = parseFloat(document.getElementById('ymax').value);
+
+                if (!estadoApp.funcion) throw new Error("La función no puede estar vacía.");
+                if (isNaN(estadoApp.x0) || isNaN(estadoApp.x1)) throw new Error("x0 y x1 deben ser números.");
+                if (isNaN(estadoApp.tol) || estadoApp.tol <= 0) throw new Error("Tolerancia debe ser un número positivo.");
+                if (isNaN(estadoApp.maxiter) || estadoApp.maxiter <= 0) throw new Error("Máximas iteraciones debe ser un entero positivo.");
+                if (estadoApp.xmin >= estadoApp.xmax) throw new Error("x_min debe ser menor que x_max.");
+
+                estadoApp.resultados = metodoSecante(
+                    estadoApp.funcion,
+                    estadoApp.x0,
+                    estadoApp.x1,
+                    estadoApp.tol,
+                    estadoApp.maxiter
+                );
+
+                estadoApp.historialResultados = [...estadoApp.resultados]; // Copia para la animación
+
+                actualizarTabla();
+                dibujarGrafica();
+                actualizarBadges();
+                document.getElementById('status').className = 'status success';
+                document.getElementById('status').innerHTML = `✅ Éxito: ${estadoApp.resultados.length} iteraciones calculadas.`;
+
+                // Mostrar botón de exportar
+                document.getElementById('btn-export').style.display = 'block';
+
+                // Detener y reiniciar la animación si estaba corriendo
+                resetAnimation();
+
+            } catch (e) {
+                document.getElementById('status').className = 'status error';
+                document.getElementById('status').innerHTML = `❌ Error: ${e.message}`;
+                document.getElementById('btn-export').style.display = 'none';
+                estadoApp.resultados = [];
+                estadoApp.historialResultados = [];
+                actualizarTabla();
+                dibujarGrafica();
+            }
+        }
+
+        // Actualizar tabla HTML
+        function actualizarTabla() {
+            const tbody = document.getElementById('tbody-resultados');
+            tbody.innerHTML = '';
+
+            if (estadoApp.resultados.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="8">No hay resultados</td>';
+                tbody.appendChild(row);
+                return;
+            }
+
+            estadoApp.resultados.forEach(r => {
+                const row = document.createElement('tr');
+                if (r.esFinal) row.classList.add('final');
+
+                row.innerHTML = `
+                    <td>${r.n}</td>
+                    <td>${isNaN(r.xnm1) ? '-' : r.xnm1.toFixed(6)}</td>
+                    <td>${isNaN(r.xn) ? '-' : r.xn.toFixed(6)}</td>
+                    <td>${isNaN(r.fxnm1) ? '-' : r.fxnm1.toFixed(6)}</td>
+                    <td>${isNaN(r.fxn) ? '-' : r.fxn.toFixed(6)}</td>
+                    <td>${isNaN(r.xnp1) ? '-' : r.xnp1.toFixed(6)}</td>
+                    <td>${isNaN(r.fxnp1) ? '-' : r.fxnp1.toFixed(6)}</td>
+                    <td>${isNaN(r.error) ? '-' : r.error.toExponential(4)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Dibujar gráfica principal
+        function dibujarGrafica() {
+            const canvas = document.getElementById('grafica');
+            const ctx = canvas.getContext('2d');
+
+            const displayWidth = canvas.clientWidth;
+            const displayHeight = canvas.clientHeight;
+
+            if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
+                canvas.width = displayWidth;
+                canvas.height = displayHeight;
+            }
+
+            const width = canvas.width;
+            const height = canvas.height;
+
+            const xMin = estadoApp.xmin;
+            const xMax = estadoApp.xmax;
+            const yMax = estadoApp.ymax;
+            const yMin = -yMax;
+
+            estadoApp.ultimosDatosGrafico = { xMin, xMax, yMax, yMin, width, height };
+
+            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+            ctx.fillRect(0, 0, width, height);
+
+            const scaleX = width / (xMax - xMin);
+            const scaleY = height / (yMax - yMin);
+
+            // Ejes
+            ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--muted').trim();
+            ctx.lineWidth = 1;
+
+            if (0 >= yMin && 0 <= yMax) {
+                const y0 = height - (0 - yMin) * scaleY;
+                ctx.beginPath();
+                ctx.moveTo(0, y0);
+                ctx.lineTo(width, y0);
+                ctx.stroke();
+            }
+            if (0 >= xMin && 0 <= xMax) {
+                const x0 = (0 - xMin) * scaleX;
+                ctx.beginPath();
+                ctx.moveTo(x0, 0);
+                ctx.lineTo(x0, height);
+                ctx.stroke();
+            }
+
+            // Función
+            if (estadoApp.funcion) {
+                ctx.beginPath();
+                let firstPoint = true;
+                const paso = (xMax - xMin) / width;
+                for (let x_plot = xMin; x_plot <= xMax; x_plot += paso) {
+                    try {
+                        const y_val = evaluarFuncion(estadoApp.funcion, x_plot);
+                        if (isFinite(y_val)) {
+                            const px = (x_plot - xMin) * scaleX;
+                            const py = height - (y_val - yMin) * scaleY;
+                            if (firstPoint) {
+                                ctx.moveTo(px, py);
+                                firstPoint = false;
+                            } else {
+                                ctx.lineTo(px, py);
+                            }
+                        } else {
+                            firstPoint = true;
+                        }
+                    } catch (e) {
+                        firstPoint = true;
+                    }
+                }
+                ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            // Puntos de la solución
+            if (estadoApp.resultados.length > 0) {
+                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--success').trim();
+                ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--card').trim();
+                ctx.lineWidth = 2;
+
+                estadoApp.resultados.forEach((r) => {
+                    if (!isNaN(r.xn) && isFinite(r.xn)) {
+                        const px = (r.xn - xMin) * scaleX;
+                        const fy = evaluarFuncion(estadoApp.funcion, r.xn);
+                        if (isFinite(fy)) {
+                            const py = height - (fy - yMin) * scaleY;
+                            ctx.beginPath();
+                            ctx.arc(px, py, 5, 0, 2 * Math.PI);
+                            ctx.fill();
+                            ctx.stroke();
+                        }
+                    }
+                });
+
+                const ultimoResultado = estadoApp.resultados[estadoApp.resultados.length - 1];
+                if (ultimoResultado.esFinal && !isNaN(ultimoResultado.xnp1)) {
+                    const px = (ultimoResultado.xnp1 - xMin) * scaleX;
+                    const py = height - (0 - yMin) * scaleY;
+                    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--danger').trim();
+                    ctx.beginPath();
+                    ctx.arc(px, py, 6, 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--card').trim();
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            }
+        }
+
+        function actualizarBadges() {
+            document.getElementById('badge-funcion').textContent = `f(x) = ${estadoApp.funcion}`;
+            document.getElementById('badge-iniciales').textContent = `x₀=${estadoApp.x0}, x₁=${estadoApp.x1}`;
+            document.getElementById('badge-tol').textContent = `Tol: ${estadoApp.tol}`;
+            document.getElementById('badge-maxiter').textContent = `Max iter: ${estadoApp.maxiter}`;
+            document.getElementById('range-display').textContent = `[${estadoApp.xmin}, ${estadoApp.xmax}]`;
+        }
+
+        function toggleRangeFields() {
+            const checkbox = document.getElementById('toggleRange');
+            const container = document.getElementById('rangeFields');
+            container.classList.toggle('visible', checkbox.checked);
+        }
+
+        function setPreset(func) {
+            document.getElementById('funcion').value = func;
+            calcular();
+        }
+
+        function tecla(val) {
+            const input = document.activeElement.tagName === 'INPUT' ? document.activeElement : document.getElementById('funcion');
+            if (val === 'AC') {
+                input.value = '';
+            } else if (val === 'DEL') {
+                input.value = input.value.slice(0, -1);
+            } else {
+                input.value += val;
+            }
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById('theme-icon');
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                icon.textContent = '☀️';
+                estadoApp.modoOscuro = false;
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                icon.textContent = '🌙';
+                estadoApp.modoOscuro = true;
+            }
+            setTimeout(() => dibujarGrafica(), 10);
+        }
+
+        function toggleHelp() {
+            const panel = document.getElementById('helpPanel');
+            panel.classList.toggle('open');
+        }
+
+        function exportarExcel() {
+            if (estadoApp.resultados.length === 0) {
+                alert("No hay resultados para exportar.");
+                return;
+            }
+
+            const ws_data = [
+                ["n", "x_(n-1)", "x_n", "f(x_(n-1))", "f(x_n)", "x_(n+1)", "f(x_(n+1))", "Error Absoluto"]
+            ];
+            estadoApp.resultados.forEach(r => {
+                ws_data.push([
+                    r.n,
+                    isNaN(r.xnm1) ? null : r.xnm1,
+                    isNaN(r.xn) ? null : r.xn,
+                    isNaN(r.fxnm1) ? null : r.fxnm1,
+                    isNaN(r.fxn) ? null : r.fxn,
+                    isNaN(r.xnp1) ? null : r.xnp1,
+                    isNaN(r.fxnp1) ? null : r.fxnp1,
+                    isNaN(r.error) ? null : r.error
+                ]);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(ws_data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Metodo_Secante");
+            XLSX.writeFile(wb, `metodo_secante_${new Date().toISOString().slice(0, 19)}.xlsx`);
+        }
+
+        document.addEventListener('keydown', function (e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); calcular(); }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'e') { e.preventDefault(); exportarExcel(); }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'h') { e.preventDefault(); toggleHelp(); }
+            if ((e.ctrlKey || e.metaKey) && e.key === 't') { e.preventDefault(); toggleTheme(); }
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            actualizarBadges();
+            dibujarGrafica();
+            estadoApp.canvasAnimacion = document.getElementById('canvas-anim');
+            estadoApp.contextoAnimacion = estadoApp.canvasAnimacion.getContext('2d');
+        });
+
+        // ==========================================
+        // FUNCIONES DE ANIMACIÓN (CORREGIDAS)
+        // ==========================================
+
+        function startAnimation() {
+            if (estadoApp.historialResultados.length === 0) {
+                alert("Primero debe calcular una solución para animarla.");
+                return;
+            }
+            if (estadoApp.animacionActiva) return;
+
+            estadoApp.animacionActiva = true;
+            document.getElementById('play-btn').disabled = true;
+            document.getElementById('pause-btn').disabled = false;
+            
+            // Si estamos en el final, reiniciar al inicio
+            if (estadoApp.indiceAnimacion >= estadoApp.historialResultados.length - 1) {
+                estadoApp.indiceAnimacion = -1;
+            }
+
+            function loop() {
+                if (!estadoApp.animacionActiva) return;
+                
+                estadoApp.indiceAnimacion++;
+                
+                if (estadoApp.indiceAnimacion >= estadoApp.historialResultados.length) {
+                    pauseAnimation();
+                    estadoApp.indiceAnimacion = estadoApp.historialResultados.length - 1;
+                    dibujarFrameAnimacion(estadoApp.indiceAnimacion);
+                    return;
+                }
+
+                dibujarFrameAnimacion(estadoApp.indiceAnimacion);
+                estadoApp.animacionId = setTimeout(loop, estadoApp.velocidadAnimacion);
+            }
+            loop();
+        }
+
+        function pauseAnimation() {
+            estadoApp.animacionActiva = false;
+            clearTimeout(estadoApp.animacionId);
+            document.getElementById('play-btn').disabled = false;
+            document.getElementById('pause-btn').disabled = true;
+        }
+
+        function nextStep() {
+            if (estadoApp.historialResultados.length === 0) {
+                alert("Primero calcule una solución.");
+                return;
+            }
+            pauseAnimation();
+            if (estadoApp.indiceAnimacion < estadoApp.historialResultados.length - 1) {
+                estadoApp.indiceAnimacion++;
+                dibujarFrameAnimacion(estadoApp.indiceAnimacion);
+            }
+        }
+
+        function prevStep() {
+            if (estadoApp.historialResultados.length === 0) return;
+            pauseAnimation();
+            if (estadoApp.indiceAnimacion > -1) {
+                estadoApp.indiceAnimacion--;
+                dibujarFrameAnimacion(estadoApp.indiceAnimacion);
+            }
+        }
+
+        function resetAnimation() {
+            pauseAnimation();
+            estadoApp.indiceAnimacion = -1;
+            dibujarFrameAnimacion(-1);
+        }
+
+        function updateAnimationSpeed() {
+            // Slider: 100 (rápido) a 2000 (lento)
+            estadoApp.velocidadAnimacion = parseInt(document.getElementById('speedSlider').value);
+        }
+
+        function actualizarInfoPanel(indice) {
+            if (indice < 0 || indice >= estadoApp.historialResultados.length) {
+                document.getElementById('anim-step').textContent = '-';
+                document.getElementById('anim-xnm1').textContent = '-';
+                document.getElementById('anim-xn').textContent = '-';
+                document.getElementById('anim-xnp1').textContent = '-';
+                return;
+            }
+
+            const res = estadoApp.historialResultados[indice];
+            document.getElementById('anim-step').textContent = res.n;
+            document.getElementById('anim-xnm1').textContent = isNaN(res.xnm1) ? '-' : res.xnm1.toFixed(5);
+            document.getElementById('anim-xn').textContent = isNaN(res.xn) ? '-' : res.xn.toFixed(5);
+            document.getElementById('anim-xnp1').textContent = isNaN(res.xnp1) ? '-' : res.xnp1.toFixed(5);
+        }
+
+        function dibujarFrameAnimacion(indice) {
+            const ctx = estadoApp.contextoAnimacion;
+            const canvas = estadoApp.canvasAnimacion;
+
+            // Ajustar tamaño
+            const displayWidth = canvas.clientWidth;
+            const displayHeight = canvas.clientHeight;
+            if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
+                canvas.width = displayWidth;
+                canvas.height = displayHeight;
+            }
+
+            const width = canvas.width;
+            const height = canvas.height;
+
+            const xMin = estadoApp.ultimosDatosGrafico.xMin;
+            const xMax = estadoApp.ultimosDatosGrafico.xMax;
+            const yMax = estadoApp.ultimosDatosGrafico.yMax;
+            const yMin = estadoApp.ultimosDatosGrafico.yMin;
+
+            const scaleX = width / (xMax - xMin);
+            const scaleY = height / (yMax - yMin);
+
+            // Limpiar
+            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+            ctx.fillRect(0, 0, width, height);
+
+            // Dibujar ejes
+            ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--muted').trim();
+            ctx.lineWidth = 1;
+            
+            // Eje X
+            const yZero = height - (0 - yMin) * scaleY;
+            ctx.beginPath();
+            ctx.moveTo(0, yZero);
+            ctx.lineTo(width, yZero);
+            ctx.stroke();
+
+            // Eje Y
+            const xZero = (0 - xMin) * scaleX;
+            ctx.beginPath();
+            ctx.moveTo(xZero, 0);
+            ctx.lineTo(xZero, height);
+            ctx.stroke();
+
+            // Dibujar función (tenue)
+            ctx.beginPath();
+            let firstPoint = true;
+            const paso = (xMax - xMin) / width;
+            for (let x_plot = xMin; x_plot <= xMax; x_plot += paso) {
+                try {
+                    const y_val = evaluarFuncion(estadoApp.funcion, x_plot);
+                    if (isFinite(y_val)) {
+                        const px = (x_plot - xMin) * scaleX;
+                        const py = height - (y_val - yMin) * scaleY;
+                        if (firstPoint) { ctx.moveTo(px, py); firstPoint = false; }
+                        else { ctx.lineTo(px, py); }
+                    } else { firstPoint = true; }
+                } catch (e) { firstPoint = true; }
+            }
+            ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--muted').trim();
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            actualizarInfoPanel(indice);
+
+            if (indice < 0) return;
+
+            // Obtener resultado actual
+            const res = estadoApp.historialResultados[indice];
+
+            // Coordenadas útiles
+            let x_nm1 = res.xnm1;
+            let x_n = res.xn;
+            let x_np1 = res.xnp1;
+
+            // Dibujar puntos históricos (secantes anteriores en gris)
+            for (let i = 0; i < indice; i++) {
+                const prev = estadoApp.historialResultados[i];
+                if (!isNaN(prev.xnm1) && !isNaN(prev.xn)) {
+                    const y_nm1_prev = evaluarFuncion(estadoApp.funcion, prev.xnm1);
+                    const y_n_prev = evaluarFuncion(estadoApp.funcion, prev.xn);
+                    
+                    if (isFinite(y_nm1_prev) && isFinite(y_n_prev)) {
+                        const px1 = (prev.xnm1 - xMin) * scaleX;
+                        const py1 = height - (y_nm1_prev - yMin) * scaleY;
+                        const px2 = (prev.xn - xMin) * scaleX;
+                        const py2 = height - (y_n_prev - yMin) * scaleY;
+
+                        ctx.strokeStyle = 'rgba(150, 150, 150, 0.3)';
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(px1, py1);
+                        ctx.lineTo(px2, py2);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            // Dibujar secante ACTUAL (si hay dos puntos)
+            if (!isNaN(x_nm1) && !isNaN(x_n) && x_nm1 !== x_n) {
+                const y_nm1 = evaluarFuncion(estadoApp.funcion, x_nm1);
+                const y_n = evaluarFuncion(estadoApp.funcion, x_n);
+
+                if (isFinite(y_nm1) && isFinite(y_n)) {
+                    const px_nm1 = (x_nm1 - xMin) * scaleX;
+                    const py_nm1 = height - (y_nm1 - yMin) * scaleY;
+                    const px_n = (x_n - xMin) * scaleX;
+                    const py_n = height - (y_n - yMin) * scaleY;
+
+                    // Dibujar línea secante extendida
+                    ctx.strokeStyle = '#ff3b30'; // Rojo brillante
+                    ctx.lineWidth = 2;
+                    
+                    // Calcular pendiente para extender la línea
+                    const m = (py_n - py_nm1) / (px_n - px_nm1);
+                    
+                    // Extender hacia los bordes del canvas
+                    const xStart = 0;
+                    const yStart = py_nm1 - m * (px_nm1 - xStart);
+                    const xEnd = width;
+                    const yEnd = py_nm1 + m * (xEnd - px_nm1);
+
+                    ctx.beginPath();
+                    ctx.moveTo(xStart, yStart);
+                    ctx.lineTo(xEnd, yEnd);
+                    ctx.stroke();
+
+                    // Puntos en la curva
+                    ctx.fillStyle = '#ff9500'; // Naranja
+                    ctx.beginPath(); ctx.arc(px_nm1, py_nm1, 6, 0, 2*Math.PI); ctx.fill();
+                    ctx.beginPath(); ctx.arc(px_n, py_n, 6, 0, 2*Math.PI); ctx.fill();
+
+                    // Etiquetas
+                    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text').trim();
+                    ctx.font = '12px monospace';
+                    ctx.fillText('xₙ₋₁', px_nm1 - 15, py_nm1 - 10);
+                    ctx.fillText('xₙ', px_n - 10, py_n - 10);
+                }
+            }
+
+            // Dibujar nueva aproximación x_np1 (si existe)
+            if (!isNaN(x_np1) && isFinite(x_np1)) {
+                const px_np1 = (x_np1 - xMin) * scaleX;
+                
+                // Punto en el eje X
+                ctx.fillStyle = '#34c759'; // Verde
+                ctx.beginPath();
+                ctx.arc(px_np1, yZero, 7, 0, 2*Math.PI);
+                ctx.fill();
+
+                // Etiqueta
+                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text').trim();
+                ctx.fillText('xₙ₊₁', px_np1 - 15, yZero - 10);
+
+                // Línea vertical punteada desde la curva hasta el eje X (si el siguiente paso existe)
+                if (indice + 1 < estadoApp.historialResultados.length) {
+                    const nextRes = estadoApp.historialResultados[indice + 1];
+                    // En el siguiente paso, x_np1 actual se convierte en x_n
+                    // Verificamos si coincide
+                     const y_curve = evaluarFuncion(estadoApp.funcion, x_np1);
+                     if (isFinite(y_curve)) {
+                         const py_curve = height - (y_curve - yMin) * scaleY;
+                         ctx.setLineDash([5, 5]);
+                         ctx.strokeStyle = '#34c759';
+                         ctx.beginPath();
+                         ctx.moveTo(px_np1, py_curve);
+                         ctx.lineTo(px_np1, yZero);
+                         ctx.stroke();
+                         ctx.setLineDash([]);
+                         
+                         // Punto en la curva
+                         ctx.fillStyle = '#34c759';
+                         ctx.beginPath();
+                         ctx.arc(px_np1, py_curve, 5, 0, 2*Math.PI);
+                         ctx.fill();
+                     }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
