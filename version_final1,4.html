@@ -1103,6 +1103,7 @@
             <div class="badges">
                 <div id="badge-iter" class="badge info">📐 Iteraciones: --</div>
                 <div id="badge-raiz" class="badge success">🎯 Raíz: --</div>
+                <div id="badge-orden" class="badge info">📈 Orden: --</div>
                 <div id="badge-error" class="badge warning">📉 Error final: --</div>
                 <div id="badge-evals" class="badge info">🔢 Evaluaciones: --</div>
             </div>
@@ -1140,11 +1141,12 @@
                             <th>xₙ</th>
                             <th>f(xₙ)</th>
                             <th>Error absoluto</th>
+                            <th>|Δx|</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td colspan="5" style="color: var(--muted); padding: 30px;">
+                            <td colspan="6" style="color: var(--muted); padding: 30px;">
                                 Ingresa los datos y presiona calcular.
                             </td>
                         </tr>
@@ -1621,7 +1623,8 @@
                     '<td>' + fmt(fila.xa) + '</td>' +
                     '<td>' + fmt(fila.xb) + '</td>' +
                     '<td>' + fmt(fila.fx) + '</td>' +
-                    '<td>' + fmt(fila.error) + '</td>';
+                    '<td>' + fmt(fila.error) + '</td>' +
+                    '<td>' + fmt(fila.dx) + '</td>';
                 tbody.appendChild(tr);
             }
         }
@@ -1726,100 +1729,6 @@
             ctx.fillText('x ≈ ' + fmt(raiz), px(raiz) + 10, py(0) - 10);
         }
 
-        /* =========================================================
-           📈 GRÁFICA DE CONVERGENCIA
-           ========================================================= */
-
-        /**
-         * Dibuja la gráfica de la evolución del error.
-         * @param {Array} tabla - Datos de iteraciones.
-         * @param {number} tol - Tolerancia usada.
-         */
-        function graficarConvergencia(tabla, tol) {
-            var c = document.getElementById('canvas-conv');
-            var ctx = c.getContext('2d');
-            var W = c.width,
-                H = c.height;
-            ctx.clearRect(0, 0, W, H);
-
-            if (tabla.length === 0) return;
-
-            var dark = document.documentElement.getAttribute('data-theme') === 'dark';
-
-            // Extraer errores (solo el error absoluto)
-            var errs = [];
-            for (var i = 0; i < tabla.length; i++) {
-                errs.push(Math.max(tabla[i].error, 1e-15));
-            }
-            var logMax = Math.log10(Math.max.apply(null, errs));
-            var logMin = Math.log10(Math.min.apply(null, errs)) - 1;
-
-            var px = function(i) { return (i / (tabla.length - 1 || 1)) * (W - 60) + 40; };
-            var py = function(e) {
-                var logE = Math.log10(Math.max(e, 1e-15));
-                return H - 30 - ((logE - logMin) / (logMax - logMin)) * (H - 50);
-            };
-
-            // Grid
-            ctx.strokeStyle = dark ? '#2c2c2e' : '#e5e5ea';
-            for (var i = 0; i <= 5; i++) {
-                var y = 30 + (i / 5) * (H - 60);
-                ctx.beginPath();
-                ctx.moveTo(40, y);
-                ctx.lineTo(W, y);
-                ctx.stroke();
-            }
-
-            // Ejes
-            ctx.strokeStyle = dark ? '#636366' : '#8e8e93';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(40, 30);
-            ctx.lineTo(40, H - 30);
-            ctx.lineTo(W, H - 30);
-            ctx.stroke();
-
-            // Etiquetas del eje Y
-            ctx.fillStyle = dark ? '#98989d' : '#86868b';
-            ctx.font = '10px monospace';
-            for (var i = 0; i <= 5; i++) {
-                var logVal = logMax - (i / 5) * (logMax - logMin);
-                var y = 30 + (i / 5) * (H - 60);
-                ctx.fillText('10^' + logVal.toFixed(1), 2, y + 3);
-            }
-
-            // Línea de tolerancia
-            var tolY = py(tol);
-            ctx.strokeStyle = '#ff9500';
-            ctx.setLineDash([5, 5]);
-            ctx.beginPath();
-            ctx.moveTo(40, tolY);
-            ctx.lineTo(W, tolY);
-            ctx.stroke();
-            ctx.setLineDash([]);
-            ctx.fillStyle = '#ff9500';
-            ctx.fillText('tol', W - 30, tolY - 5);
-
-            // Línea de error
-            ctx.strokeStyle = dark ? '#0a84ff' : '#0071e3';
-            ctx.lineWidth = 2.5;
-            ctx.beginPath();
-            for (var i = 0; i < errs.length; i++) {
-                if (i === 0) ctx.moveTo(px(i), py(errs[i]));
-                else ctx.lineTo(px(i), py(errs[i]));
-            }
-            ctx.stroke();
-
-            // Puntos
-            ctx.fillStyle = dark ? '#0a84ff' : '#0071e3';
-            for (var i = 0; i < errs.length; i++) {
-                ctx.beginPath();
-                ctx.arc(px(i), py(errs[i]), 4, 0, 2 * Math.PI);
-                ctx.fill();
-            }
-        }
-
-        /* =========================================================
            🔘 TOGGLE DE CONTROLES DE RANGO
            ========================================================= */
 
