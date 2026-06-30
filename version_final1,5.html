@@ -8,27 +8,33 @@
     <style>
         :root {
             --bg-primary: #ffffff;
-            --bg-secondary: #f5f5f5;
-            --text-primary: #333333;
-            --text-secondary: #666666;
-            --border-color: #ddd;
+            --bg-secondary: #f0f4f8;
+            --text-primary: #1a1a2e;
+            --text-secondary: #4a5568;
+            --border-color: #cbd5e0;
             --accent-color: #2563eb;
             --accent-hover: #1d4ed8;
             --success-color: #10b981;
             --warning-color: #f59e0b;
             --error-color: #ef4444;
             --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --table-header-bg: #2563eb;
+            --table-row-even: #f7fafc;
+            --table-border: #4a5568;
         }
 
         [data-theme="dark"] {
             --bg-primary: #1a1a2e;
             --bg-secondary: #16213e;
             --text-primary: #eaeaea;
-            --text-secondary: #b0b0b0;
-            --border-color: #404040;
+            --text-secondary: #a0aec0;
+            --border-color: #4a5568;
             --accent-color: #60a5fa;
             --accent-hover: #93c5fd;
             --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            --table-header-bg: #1e40af;
+            --table-row-even: #1a365d;
+            --table-border: #718096;
         }
 
         * {
@@ -55,15 +61,24 @@
         header {
             text-align: center;
             margin-bottom: 30px;
-            padding: 20px;
-            background: var(--bg-secondary);
-            border-radius: 10px;
+            padding: 25px;
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            border-radius: 12px;
             box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
         }
 
         h1 {
             color: var(--accent-color);
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            font-size: 2rem;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-top: 5px;
         }
 
         .theme-toggle {
@@ -73,19 +88,24 @@
             background: var(--accent-color);
             color: white;
             border: none;
-            padding: 10px 15px;
+            padding: 12px 15px;
             border-radius: 50%;
             cursor: pointer;
             font-size: 1.2rem;
             box-shadow: var(--card-shadow);
             z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
         }
 
         .main-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
+            gap: 25px;
+            margin-bottom: 25px;
         }
 
         @media (max-width: 900px) {
@@ -96,77 +116,85 @@
 
         .card {
             background: var(--bg-secondary);
-            border-radius: 10px;
-            padding: 20px;
+            border-radius: 12px;
+            padding: 25px;
             box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
         }
 
         .card h2 {
             color: var(--accent-color);
-            margin-bottom: 15px;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 10px;
+            margin-bottom: 20px;
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 12px;
+            font-size: 1.4rem;
         }
 
         .input-group {
-            margin-bottom: 15px;
+            margin-bottom: 18px;
         }
 
         label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-weight: 600;
             color: var(--text-secondary);
+            font-size: 0.95rem;
         }
 
         input[type="number"], input[type="text"] {
             width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
             background: var(--bg-primary);
             color: var(--text-primary);
             font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         input:focus {
             outline: none;
             border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
         }
 
         .btn {
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 1rem;
             font-weight: 600;
             transition: all 0.3s ease;
-            margin: 5px;
+            margin: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .btn-primary {
-            background: var(--accent-color);
+            background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%);
             color: white;
         }
 
-        .btn-primary:hover {
-            background: var(--accent-hover);
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
         }
 
         .btn-success {
-            background: var(--success-color);
+            background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
             color: white;
         }
 
         .btn-warning {
-            background: var(--warning-color);
+            background: linear-gradient(135deg, var(--warning-color) 0%, #d97706 100%);
             color: white;
         }
 
         .btn-danger {
-            background: var(--error-color);
+            background: linear-gradient(135deg, var(--error-color) 0%, #dc2626 100%);
             color: white;
         }
 
@@ -178,6 +206,7 @@
         .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            transform: none !important;
         }
 
         .button-row {
@@ -190,16 +219,26 @@
         .scientific-keyboard {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 5px;
-            margin-top: 10px;
+            gap: 6px;
+            margin-top: 12px;
         }
 
         .sci-btn {
-            padding: 8px;
-            font-size: 0.9rem;
+            padding: 10px 6px;
+            font-size: 0.85rem;
             background: var(--bg-primary);
-            border: 1px solid var(--border-color);
+            border: 2px solid var(--border-color);
             color: var(--text-primary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .sci-btn:hover {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
         }
 
         .results-section {
@@ -209,13 +248,15 @@
         .result-box {
             background: var(--bg-primary);
             padding: 15px;
-            border-radius: 5px;
-            border-left: 4px solid var(--accent-color);
-            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 5px solid var(--accent-color);
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         .result-box strong {
             color: var(--accent-color);
+            font-size: 1.05rem;
         }
 
         table {
@@ -223,33 +264,45 @@
             border-collapse: collapse;
             margin-top: 15px;
             background: var(--bg-primary);
+            border: 2px solid var(--table-border);
         }
 
         th, td {
-            padding: 12px;
+            padding: 12px 10px;
             text-align: center;
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--table-border);
+            font-size: 0.9rem;
         }
 
         th {
-            background: var(--accent-color);
+            background: var(--table-header-bg);
             color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.85rem;
         }
 
         tr:nth-child(even) {
-            background: var(--bg-secondary);
+            background: var(--table-row-even);
         }
 
         tr:hover {
-            background: rgba(37, 99, 235, 0.1);
+            background: rgba(37, 99, 235, 0.15);
+        }
+
+        .iteration-highlight {
+            background: rgba(245, 158, 11, 0.3) !important;
+            font-weight: 600;
         }
 
         .canvas-container {
             position: relative;
             margin-top: 20px;
             background: var(--bg-primary);
-            border-radius: 5px;
+            border-radius: 8px;
             overflow: hidden;
+            border: 2px solid var(--border-color);
         }
 
         canvas {
@@ -261,22 +314,23 @@
             display: flex;
             justify-content: center;
             gap: 10px;
-            margin-top: 15px;
+            margin-top: 20px;
             flex-wrap: wrap;
         }
 
         .progress-bar {
             width: 100%;
-            height: 20px;
+            height: 24px;
             background: var(--border-color);
-            border-radius: 10px;
+            border-radius: 12px;
             overflow: hidden;
-            margin-top: 10px;
+            margin-top: 15px;
+            border: 2px solid var(--table-border);
         }
 
         .progress-fill {
             height: 100%;
-            background: var(--success-color);
+            background: linear-gradient(90deg, var(--success-color), #34d399);
             width: 0%;
             transition: width 0.3s ease;
         }
@@ -288,7 +342,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.6);
             z-index: 2000;
             justify-content: center;
             align-items: center;
@@ -296,49 +350,61 @@
 
         .modal-content {
             background: var(--bg-primary);
-            padding: 30px;
-            border-radius: 10px;
-            max-width: 600px;
+            padding: 35px;
+            border-radius: 12px;
+            max-width: 650px;
             max-height: 80vh;
             overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
         }
 
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 15px;
         }
 
         .close-modal {
             background: none;
             border: none;
-            font-size: 1.5rem;
+            font-size: 2rem;
             cursor: pointer;
             color: var(--text-primary);
+            transition: color 0.3s ease;
+        }
+
+        .close-modal:hover {
+            color: var(--error-color);
         }
 
         .preset-btn {
             margin: 5px;
-            padding: 8px 15px;
+            padding: 10px 18px;
             background: var(--bg-primary);
-            border: 1px solid var(--border-color);
+            border: 2px solid var(--border-color);
             color: var(--text-primary);
             cursor: pointer;
-            border-radius: 5px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
         }
 
         .preset-btn:hover {
             background: var(--accent-color);
             color: white;
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
         }
 
         .status-indicator {
             display: inline-block;
-            width: 10px;
-            height: 10px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
-            margin-right: 5px;
+            margin-right: 8px;
         }
 
         .status-running {
@@ -360,13 +426,33 @@
         }
 
         .info-text {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: var(--text-secondary);
             margin-top: 5px;
         }
 
-        .iteration-highlight {
-            background: rgba(37, 99, 235, 0.2) !important;
+        h3 {
+            color: var(--accent-color);
+            margin: 20px 0 10px 0;
+            font-size: 1.1rem;
+        }
+
+        code {
+            background: var(--bg-secondary);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9rem;
+        }
+
+        .formula-box {
+            background: var(--bg-secondary);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-color);
+            margin: 15px 0;
+            font-family: 'Consolas', monospace;
+            font-size: 1rem;
         }
     </style>
 </head>
@@ -375,8 +461,8 @@
 
     <div class="container">
         <header>
-            <h1>🔢 Método de la Secante</h1>
-            <p>Calculadora numérica para encontrar raíces de funciones</p>
+            <h1>🧮 Método de la Secante</h1>
+            <p class="subtitle">Grupo 3: The Jackson 5 · Análisis Numérico</p>
         </header>
 
         <div class="main-grid">
@@ -404,7 +490,6 @@
                         <button class="sci-btn" onclick="insertSymbol('pi')">π</button>
                         <button class="sci-btn" onclick="insertSymbol('e')">e</button>
                         <button class="sci-btn" onclick="insertSymbol('abs(')">|x|</button>
-                        <button class="sci-btn" onclick="insertSymbol('**')">xʸ</button>
                         <button class="sci-btn" onclick="clearFunction()">C</button>
                         <button class="sci-btn" onclick="backspace()">⌫</button>
                     </div>
@@ -436,8 +521,8 @@
                     <button class="btn btn-success" id="exportBtn">📊 Exportar Excel</button>
                 </div>
 
-                <div style="margin-top: 15px;">
-                    <label>Presets de funciones:</label>
+                <div style="margin-top: 20px;">
+                    <label style="display: block; margin-bottom: 10px;">Presets de funciones:</label>
                     <div class="button-row">
                         <button class="preset-btn" onclick="loadPreset('x^3 - 2*x - 5')">Cúbica</button>
                         <button class="preset-btn" onclick="loadPreset('x^2 - 4')">Cuadrática</button>
@@ -470,16 +555,18 @@
                         <span id="statusText">-</span>
                     </div>
 
-                    <h3 style="margin-top: 20px;">Tabla de Iteraciones</h3>
+                    <h3 style="margin-top: 25px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px;">Tabla de Iteraciones</h3>
                     <div style="overflow-x: auto;">
                         <table id="iterationsTable">
                             <thead>
                                 <tr>
-                                    <th>#</th>
+                                    <th>i</th>
                                     <th>xₙ₋₁</th>
                                     <th>xₙ</th>
+                                    <th>xₙ₊₁</th>
+                                    <th>f(xₙ₋₁)</th>
                                     <th>f(xₙ)</th>
-                                    <th>Error Absoluto</th>
+                                    <th>Error</th>
                                 </tr>
                             </thead>
                             <tbody id="iterationsBody"></tbody>
@@ -487,8 +574,8 @@
                     </div>
                 </div>
 
-                <div id="noResultsMessage" style="text-align: center; padding: 40px; color: var(--text-secondary);">
-                    <p>Ingresa los datos y presiona "Calcular" para ver los resultados</p>
+                <div id="noResultsMessage" style="text-align: center; padding: 50px; color: var(--text-secondary);">
+                    <p style="font-size: 1.1rem;">📊 Ingresa los datos y presiona "Calcular" para ver los resultados</p>
                 </div>
             </div>
         </div>
@@ -511,8 +598,8 @@
             <div class="progress-bar">
                 <div class="progress-fill" id="progressFill"></div>
             </div>
-            <p class="info-text" style="text-align: center; margin-top: 5px;">
-                Iteración: <span id="currentIteration">0</span> / <span id="totalIterations">0</span>
+            <p class="info-text" style="text-align: center; margin-top: 10px;">
+                Iteración: <strong><span id="currentIteration">0</span></strong> / <strong><span id="totalIterations">0</span></strong>
             </p>
         </div>
     </div>
@@ -521,44 +608,54 @@
     <div class="modal" id="helpModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>❓ Ayuda - Método de la Secante</h2>
+                <h2 style="margin: 0;">❓ Ayuda - Método de la Secante</h2>
                 <button class="close-modal" id="closeHelp">&times;</button>
             </div>
             <div>
                 <h3>¿Qué es el Método de la Secante?</h3>
-                <p style="margin: 10px 0;">
+                <p style="margin: 10px 0; line-height: 1.8;">
                     El método de la secante es un algoritmo iterativo para encontrar la raíz de una función.
                     A diferencia del método de Newton, no requiere calcular la derivada de la función.
+                    Utiliza dos puntos iniciales y aproxima la derivada mediante una diferencia finita.
                 </p>
 
-                <h3 style="margin-top: 15px;">Fórmula:</h3>
-                <p style="margin: 10px 0; font-family: monospace; background: var(--bg-secondary); padding: 10px; border-radius: 5px;">
-                    xₙ₊₁ = xₙ - f(xₙ) * (xₙ - xₙ₋₁) / (f(xₙ) - f(xₙ₋₁))
-                </p>
+                <h3>Fórmula:</h3>
+                <div class="formula-box">
+                    xₙ₊₁ = xₙ - f(xₙ) × (xₙ - xₙ₋₁) / (f(xₙ) - f(xₙ₋₁))
+                </div>
 
-                <h3 style="margin-top: 15px;">Instrucciones:</h3>
-                <ol style="margin-left: 20px; margin-top: 10px;">
-                    <li>Ingresa la función f(x) usando la notación matemática estándar</li>
+                <h3>Instrucciones de uso:</h3>
+                <ol style="margin-left: 20px; margin-top: 10px; line-height: 2;">
+                    <li>Ingresa la función f(x) usando el teclado científico o escribiendo directamente</li>
                     <li>Proporciona dos valores iniciales x₀ y x₁ cercanos a la raíz esperada</li>
-                    <li>Establece la tolerancia deseada para el error</li>
+                    <li>Establece la tolerancia deseada para el error (ej: 0.0001)</li>
+                    <li>Define el máximo de iteraciones permitidas</li>
                     <li>Presiona "Calcular" para ejecutar el método</li>
                     <li>Usa los controles de animación para visualizar el proceso paso a paso</li>
                 </ol>
 
-                <h3 style="margin-top: 15px;">Funciones soportadas:</h3>
-                <ul style="margin-left: 20px; margin-top: 10px;">
-                    <li>Operaciones básicas: +, -, *, /, ^ (potencia)</li>
-                    <li>Funciones trigonométricas: sin(), cos(), tan()</li>
-                    <li>Funciones exponenciales y logarítmicas: exp(), log()</li>
-                    <li>Otras funciones: sqrt(), abs()</li>
-                    <li>Constantes: pi, e</li>
+                <h3>Funciones matemáticas soportadas:</h3>
+                <ul style="margin-left: 20px; margin-top: 10px; line-height: 1.8;">
+                    <li><strong>Operaciones básicas:</strong> +, -, *, /, ^ (potencia)</li>
+                    <li><strong>Trigonométricas:</strong> sin(), cos(), tan()</li>
+                    <li><strong>Exponenciales y logarítmicas:</strong> exp(), log() (base 10), ln() (base e)</li>
+                    <li><strong>Otras funciones:</strong> sqrt() (raíz cuadrada), abs() (valor absoluto)</li>
+                    <li><strong>Constantes:</strong> π (pi), e (número de Euler)</li>
                 </ul>
 
-                <h3 style="margin-top: 15px;">Exportar a Excel:</h3>
-                <p style="margin: 10px 0;">
+                <h3>Exportar a Excel:</h3>
+                <p style="margin: 10px 0; line-height: 1.8;">
                     El botón "Exportar Excel" genera un archivo .xlsx con todos los resultados
-                    de las iteraciones, incluyendo fórmulas para verificar los cálculos.
+                    de las iteraciones, incluyendo los valores de xₙ₋₁, xₙ, xₙ₊₁, f(xₙ₋₁), f(xₙ) y el error absoluto.
                 </p>
+
+                <h3>Interpretación de resultados:</h3>
+                <ul style="margin-left: 20px; margin-top: 10px; line-height: 1.8;">
+                    <li><strong>Raíz encontrada:</strong> El valor aproximado de x donde f(x) ≈ 0</li>
+                    <li><strong>f(Raíz):</strong> El valor de la función evaluada en la raíz (debe ser cercano a 0)</li>
+                    <li><strong>Error Absoluto:</strong> La diferencia entre iteraciones consecutivas |xₙ₊₁ - xₙ|</li>
+                    <li><strong>Estado:</strong> Indica si el método convergió o alcanzó el máximo de iteraciones</li>
+                </ul>
             </div>
         </div>
     </div>
@@ -571,6 +668,7 @@
         let currentStep = 0;
         let animationSpeed = 1000;
         let rootFound = null;
+        let currentFunction = '';
 
         // Elementos del DOM
         const themeToggle = document.getElementById('themeToggle');
@@ -613,11 +711,16 @@
             nextBtn.addEventListener('click', nextStep);
             prevBtn.addEventListener('click', previousStep);
             resetBtn.addEventListener('click', resetAnimation);
-            
+
             helpModal.addEventListener('click', function(e) {
                 if (e.target === helpModal) {
                     closeHelpModal();
                 }
+            });
+
+            // Enter para calcular
+            functionInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') calculate();
             });
         }
 
@@ -627,7 +730,9 @@
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
-            drawGraph();
+            if (iterationsData.length > 0) {
+                drawGraph(currentFunction, { root: rootFound, iterations: iterationsData });
+            }
         }
 
         function loadTheme() {
@@ -635,27 +740,16 @@
             document.documentElement.setAttribute('data-theme', savedTheme);
         }
 
-        // Teclado científico
+        // Teclado científico - Muestra nombres limpios al usuario
         function insertSymbol(symbol) {
             const input = functionInput;
             const start = input.selectionStart;
             const end = input.selectionEnd;
             const text = input.value;
-            
-            let replacement = symbol;
-            if (symbol === 'pi') replacement = 'Math.PI';
-            else if (symbol === 'e') replacement = 'Math.E';
-            else if (symbol === 'sin(') replacement = 'Math.sin(';
-            else if (symbol === 'cos(') replacement = 'Math.cos(';
-            else if (symbol === 'tan(') replacement = 'Math.tan(';
-            else if (symbol === 'log(') replacement = 'Math.log10(';
-            else if (symbol === 'exp(') replacement = 'Math.exp(';
-            else if (symbol === 'sqrt(') replacement = 'Math.sqrt(';
-            else if (symbol === 'abs(') replacement = 'Math.abs(';
-            else if (symbol === '^') replacement = '**';
-            
-            input.value = text.substring(0, start) + replacement + text.substring(end);
-            input.selectionStart = input.selectionEnd = start + replacement.length;
+
+            // Lo que se muestra al usuario es limpio (sin Math.)
+            input.value = text.substring(0, start) + symbol + text.substring(end);
+            input.selectionStart = input.selectionEnd = start + symbol.length;
             input.focus();
         }
 
@@ -669,7 +763,7 @@
             const start = input.selectionStart;
             const end = input.selectionEnd;
             const text = input.value;
-            
+
             if (start === end && start > 0) {
                 input.value = text.substring(0, start - 1) + text.substring(end);
                 input.selectionStart = input.selectionEnd = start - 1;
@@ -685,37 +779,36 @@
             functionInput.value = func;
         }
 
-        // Evaluar función
+        // Evaluar función - Convierte sintaxis amigable a JavaScript
         function evaluateFunction(expr, x) {
             try {
-                // Reemplazar x por el valor numérico
                 let processedExpr = expr.toLowerCase();
-                
+
                 // Reemplazar ^ por ** para potencias
                 processedExpr = processedExpr.replace(/\^/g, '**');
-                
-                // Reemplazar constantes
-                processedExpr = processedExpr.replace(/(?<![a-zA-Z])pi(?![a-zA-Z])/g, 'Math.PI');
-                processedExpr = processedExpr.replace(/(?<![a-zA-Z])e(?![a-zA-Z0-9])/g, 'Math.E');
-                
-                // Reemplazar funciones
-                processedExpr = processedExpr.replace(/(?<![a-zA-Z])sin\(/g, 'Math.sin(');
-                processedExpr = processedExpr.replace(/(?<![a-zA-Z])cos\(/g, 'Math.cos(');
-                processedExpr = processedExpr.replace(/(?<![a-zA-Z])tan\(/g, 'Math.tan(');
-                processedExpr = processedExpr.replace(/(?<![a-zA-Z])log\(/g, 'Math.log10(');
-                processedExpr = processedExpr.replace(/(?<![a-zA-Z])ln\(/g, 'Math.log(');
-                processedExpr = processedExpr.replace(/(?<![a-zA-Z])exp\(/g, 'Math.exp(');
-                processedExpr = processedExpr.replace(/(?<![a-zA-Z])sqrt\(/g, 'Math.sqrt(');
-                processedExpr = processedExpr.replace(/(?<![a-zA-Z])abs\(/g, 'Math.abs(');
-                
+
+                // Reemplazar constantes (evitando coincidencias parciales)
+                processedExpr = processedExpr.replace(/(?<![a-z])pi(?![a-z])/g, 'Math.PI');
+                processedExpr = processedExpr.replace(/(?<![a-z])e(?![a-z0-9])/g, 'Math.E');
+
+                // Reemplazar funciones trigonométricas y otras
+                processedExpr = processedExpr.replace(/(?<![a-z])sin\(/g, 'Math.sin(');
+                processedExpr = processedExpr.replace(/(?<![a-z])cos\(/g, 'Math.cos(');
+                processedExpr = processedExpr.replace(/(?<![a-z])tan\(/g, 'Math.tan(');
+                processedExpr = processedExpr.replace(/(?<![a-z])log\(/g, 'Math.log10(');
+                processedExpr = processedExpr.replace(/(?<![a-z])ln\(/g, 'Math.log(');
+                processedExpr = processedExpr.replace(/(?<![a-z])exp\(/g, 'Math.exp(');
+                processedExpr = processedExpr.replace(/(?<![a-z])sqrt\(/g, 'Math.sqrt(');
+                processedExpr = processedExpr.replace(/(?<![a-z])abs\(/g, 'Math.abs(');
+
                 // Crear función segura
-                const func = new Function('x', `return ${processedExpr};`);
+                const func = new Function('x', 'return ' + processedExpr + ';');
                 const result = func(x);
-                
+
                 if (!isFinite(result)) {
                     throw new Error('Resultado no finito');
                 }
-                
+
                 return result;
             } catch (error) {
                 console.error('Error evaluando función:', error);
@@ -723,35 +816,29 @@
             }
         }
 
-        // Método de la Secante
+        // Método de la Secante - Lógica corregida
         function secantMethod(f, x0, x1, tolerance, maxIterations) {
             const iterations = [];
             let prevX = x0;
             let currX = x1;
             let prevFX = evaluateFunction(f, x0);
             let currFX = evaluateFunction(f, x1);
-            let error = Math.abs(currX - prevX);
-            
-            // Iteración 0
+
+            // Iteración 0: Mostrar valores iniciales
             iterations.push({
                 iteration: 0,
-                xPrev: null,
-                xCurr: currX,
-                fX: currFX,
+                xPrev: x0,
+                xCurr: x1,
+                xNext: null,
+                fXPrev: prevFX,
+                fXCurr: currFX,
                 error: null
             });
-            
+
             for (let i = 1; i <= maxIterations; i++) {
-                if (Math.abs(currFX) < tolerance) {
-                    return {
-                        root: currX,
-                        iterations: iterations,
-                        converged: true,
-                        message: 'Convergencia alcanzada'
-                    };
-                }
-                
+                // Verificar denominador
                 if (Math.abs(currFX - prevFX) < 1e-15) {
+                    iterations[i - 1].xNext = currX;
                     return {
                         root: currX,
                         iterations: iterations,
@@ -759,21 +846,26 @@
                         message: 'Denominador muy pequeño - posible divergencia'
                     };
                 }
-                
+
                 // Fórmula de la secante
                 const nextX = currX - currFX * (currX - prevX) / (currFX - prevFX);
                 const nextFX = evaluateFunction(f, nextX);
-                error = Math.abs(nextX - currX);
-                
-                iterations.push({
-                    iteration: i,
-                    xPrev: prevX,
-                    xCurr: currX,
-                    fX: currFX,
-                    error: error
-                });
-                
-                if (error < tolerance) {
+                const error = Math.abs(nextX - currX);
+
+                // Actualizar la iteración anterior con xNext
+                iterations[i - 1].xNext = nextX;
+
+                // Verificar convergencia
+                if (error < tolerance || Math.abs(nextFX) < tolerance) {
+                    iterations.push({
+                        iteration: i,
+                        xPrev: currX,
+                        xCurr: nextX,
+                        xNext: nextX,
+                        fXPrev: currFX,
+                        fXCurr: nextFX,
+                        error: error
+                    });
                     return {
                         root: nextX,
                         iterations: iterations,
@@ -781,13 +873,31 @@
                         message: 'Convergencia alcanzada'
                     };
                 }
-                
+
+                // Agregar nueva iteración
+                iterations.push({
+                    iteration: i,
+                    xPrev: currX,
+                    xCurr: nextX,
+                    xNext: null,
+                    fXPrev: currFX,
+                    fXCurr: nextFX,
+                    error: error
+                });
+
+                // Preparar para siguiente iteración
                 prevX = currX;
                 currX = nextX;
                 prevFX = currFX;
                 currFX = nextFX;
             }
-            
+
+            // Máximo de iteraciones alcanzado
+            if (iterations.length > 0 && iterations[iterations.length - 1].xNext === null) {
+                const lastIter = iterations[iterations.length - 1];
+                lastIter.xNext = currX;
+            }
+
             return {
                 root: currX,
                 iterations: iterations,
@@ -804,43 +914,46 @@
                 const x1 = parseFloat(x1Input.value);
                 const tolerance = parseFloat(toleranceInput.value);
                 const maxIterations = parseInt(maxIterationsInput.value);
-                
+
                 if (!func) {
                     alert('Por favor ingresa una función');
                     return;
                 }
-                
+
                 if (isNaN(x0) || isNaN(x1)) {
                     alert('Por favor ingresa valores válidos para x₀ y x₁');
                     return;
                 }
-                
+
                 if (isNaN(tolerance) || tolerance <= 0) {
-                    alert('Por favor ingresa una tolerancia válida');
+                    alert('Por favor ingresa una tolerancia válida mayor a 0');
                     return;
                 }
-                
+
                 if (isNaN(maxIterations) || maxIterations <= 0) {
                     alert('Por favor ingresa un número válido de iteraciones máximas');
                     return;
                 }
-                
+
+                // Guardar función actual
+                currentFunction = func;
+
                 // Ejecutar método de la secante
                 const result = secantMethod(func, x0, x1, tolerance, maxIterations);
-                
+
                 // Guardar datos
                 iterationsData = result.iterations;
                 rootFound = result.root;
-                
+
                 // Mostrar resultados
                 displayResults(result, func);
-                
+
                 // Habilitar controles de animación
                 enableAnimationControls();
-                
+
                 // Dibujar gráfica
                 drawGraph(func, result);
-                
+
             } catch (error) {
                 alert('Error: ' + error.message);
                 console.error(error);
@@ -851,17 +964,17 @@
         function displayResults(result, func) {
             resultsSection.style.display = 'block';
             noResultsMessage.style.display = 'none';
-            
+
             document.getElementById('rootValue').textContent = formatNumber(result.root);
             document.getElementById('fRootValue').textContent = formatNumber(evaluateFunction(func, result.root));
-            document.getElementById('iterationsCount').textContent = result.iterations.length - 1;
-            document.getElementById('finalError').textContent = result.iterations.length > 1 
-                ? formatNumber(result.iterations[result.iterations.length - 1].error) 
+            document.getElementById('iterationsCount').textContent = result.iterations.length;
+            document.getElementById('finalError').textContent = result.iterations.length > 0 && result.iterations[result.iterations.length - 1].error !== null
+                ? formatNumber(result.iterations[result.iterations.length - 1].error)
                 : 'N/A';
-            
+
             const statusIndicator = document.getElementById('statusIndicator');
             const statusText = document.getElementById('statusText');
-            
+
             if (result.converged) {
                 statusIndicator.className = 'status-indicator status-complete';
                 statusText.textContent = result.message;
@@ -871,29 +984,31 @@
                 statusText.textContent = result.message;
                 statusText.style.color = 'var(--error-color)';
             }
-            
+
             // Llenar tabla
             const tbody = document.getElementById('iterationsBody');
             tbody.innerHTML = '';
-            
-            result.iterations.forEach((iter, index) => {
+
+            result.iterations.forEach(function(iter, index) {
                 const row = document.createElement('tr');
-                row.id = `row-${index}`;
-                
+                row.id = 'row-' + index;
+
                 const cells = [
                     iter.iteration,
-                    iter.xPrev !== null ? formatNumber(iter.xPrev) : '-',
+                    formatNumber(iter.xPrev),
                     formatNumber(iter.xCurr),
-                    formatNumber(iter.fX),
+                    iter.xNext !== null ? formatNumber(iter.xNext) : '-',
+                    formatNumber(iter.fXPrev),
+                    formatNumber(iter.fXCurr),
                     iter.error !== null ? formatNumber(iter.error) : '-'
                 ];
-                
-                cells.forEach((cellData, cellIndex) => {
+
+                cells.forEach(function(cellData) {
                     const td = document.createElement('td');
                     td.textContent = cellData;
                     row.appendChild(td);
                 });
-                
+
                 tbody.appendChild(row);
             });
         }
@@ -905,9 +1020,11 @@
             if (Math.abs(num) < 1e-10) {
                 return '0';
             }
-            if (Math.abs(num) >= 1e6 || Math.abs(num) < 1e-4) {
-                return num.toExponential(6);
+            // Notación científica para números muy grandes o muy pequeños
+            if (Math.abs(num) >= 1e6 || (Math.abs(num) < 1e-4 && num !== 0)) {
+                return num.toExponential(6).replace(/\.?0+e/, 'e');
             }
+            // Formato decimal con hasta 10 decimales
             return num.toFixed(10).replace(/\.?0+$/, '');
         }
 
@@ -918,7 +1035,7 @@
             prevBtn.disabled = false;
             resetBtn.disabled = false;
             pauseBtn.disabled = false;
-            
+
             document.getElementById('totalIterations').textContent = iterationsData.length;
             document.getElementById('currentIteration').textContent = '0';
             document.getElementById('progressFill').style.width = '0%';
@@ -926,21 +1043,21 @@
 
         function playAnimation() {
             if (isPlaying) return;
-            
+
             isPlaying = true;
             playBtn.disabled = true;
             pauseBtn.disabled = false;
-            
+
             animate();
         }
 
         function animate() {
             if (!isPlaying) return;
-            
+
             if (currentStep < iterationsData.length) {
                 currentStep++;
                 updateAnimationDisplay();
-                
+
                 if (currentStep >= iterationsData.length) {
                     isPlaying = false;
                     playBtn.disabled = false;
@@ -982,32 +1099,31 @@
             pauseAnimation();
             currentStep = 0;
             updateAnimationDisplay();
-            drawGraph(functionInput.value.trim(), { root: rootFound, iterations: iterationsData });
+            drawGraph(currentFunction, { root: rootFound, iterations: iterationsData });
         }
 
         function updateAnimationDisplay() {
             document.getElementById('currentIteration').textContent = currentStep;
-            
+
             const progress = (currentStep / iterationsData.length) * 100;
             document.getElementById('progressFill').style.width = progress + '%';
-            
+
             // Resaltar fila actual
-            document.querySelectorAll('#iterationsBody tr').forEach((row, index) => {
+            document.querySelectorAll('#iterationsBody tr').forEach(function(row, index) {
                 row.classList.remove('iteration-highlight');
                 if (index === currentStep) {
                     row.classList.add('iteration-highlight');
                     row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 }
             });
-            
+
             // Redibujar gráfica con el estado actual
             if (iterationsData.length > 0 && currentStep < iterationsData.length) {
-                const func = functionInput.value.trim();
                 const currentState = {
                     root: rootFound,
                     iterations: iterationsData.slice(0, currentStep + 1)
                 };
-                drawGraph(func, currentState);
+                drawGraph(currentFunction, currentState);
             }
         }
 
@@ -1015,13 +1131,13 @@
         function drawEmptyCanvas() {
             const width = functionCanvas.width;
             const height = functionCanvas.height;
-            
+
             ctx.clearRect(0, 0, width, height);
-            
+
             // Fondo
             ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg-primary').trim();
             ctx.fillRect(0, 0, width, height);
-            
+
             // Texto
             ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim();
             ctx.font = '16px Segoe UI';
@@ -1034,35 +1150,35 @@
                 drawEmptyCanvas();
                 return;
             }
-            
+
             const width = functionCanvas.width;
             const height = functionCanvas.height;
             const padding = 50;
-            
+
             // Limpiar canvas
             ctx.clearRect(0, 0, width, height);
-            
+
             // Colores
             const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-primary').trim();
             const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim();
             const axisColor = getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim();
             const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-secondary').trim();
-            
+
             // Fondo
             ctx.fillStyle = bgColor;
             ctx.fillRect(0, 0, width, height);
-            
+
             // Determinar rango de visualización
             let xMin, xMax, yMin, yMax;
-            
+
             if (result && result.iterations && result.iterations.length > 0) {
-                const xValues = result.iterations.map(i => i.xCurr).filter(v => v !== null);
-                const minX = Math.min(...xValues);
-                const maxX = Math.max(...xValues);
+                const xValues = result.iterations.map(function(i) { return i.xCurr; }).filter(function(v) { return v !== null; });
+                const minX = Math.min.apply(null, xValues);
+                const maxX = Math.max.apply(null, xValues);
                 const range = maxX - minX || 1;
                 xMin = minX - range * 0.5;
                 xMax = maxX + range * 0.5;
-                
+
                 // Calcular yMin y yMax evaluando la función
                 const step = (xMax - xMin) / 100;
                 let minY = Infinity, maxY = -Infinity;
@@ -1075,7 +1191,7 @@
                         }
                     } catch (e) {}
                 }
-                
+
                 const yRange = maxY - minY || 1;
                 yMin = minY - yRange * 0.2;
                 yMax = maxY + yRange * 0.2;
@@ -1085,15 +1201,15 @@
                 yMin = -10;
                 yMax = 10;
             }
-            
+
             // Funciones de transformación
-            const toScreenX = (x) => padding + ((x - xMin) / (xMax - xMin)) * (width - 2 * padding);
-            const toScreenY = (y) => height - padding - ((y - yMin) / (yMax - yMin)) * (height - 2 * padding);
-            
+            function toScreenX(x) { return padding + ((x - xMin) / (xMax - xMin)) * (width - 2 * padding); }
+            function toScreenY(y) { return height - padding - ((y - yMin) / (yMax - yMin)) * (height - 2 * padding); }
+
             // Dibujar cuadrícula
             ctx.strokeStyle = gridColor;
             ctx.lineWidth = 1;
-            
+
             // Líneas verticales
             const xStep = (xMax - xMin) / 10;
             for (let i = 0; i <= 10; i++) {
@@ -1104,7 +1220,7 @@
                 ctx.lineTo(sx, height - padding);
                 ctx.stroke();
             }
-            
+
             // Líneas horizontales
             const yStep = (yMax - yMin) / 10;
             for (let i = 0; i <= 10; i++) {
@@ -1115,11 +1231,11 @@
                 ctx.lineTo(width - padding, sy);
                 ctx.stroke();
             }
-            
+
             // Dibujar ejes
             ctx.strokeStyle = axisColor;
             ctx.lineWidth = 2;
-            
+
             // Eje X
             if (yMin <= 0 && yMax >= 0) {
                 const yAxis = toScreenY(0);
@@ -1128,7 +1244,7 @@
                 ctx.lineTo(width - padding, yAxis);
                 ctx.stroke();
             }
-            
+
             // Eje Y
             if (xMin <= 0 && xMax >= 0) {
                 const xAxis = toScreenX(0);
@@ -1137,22 +1253,22 @@
                 ctx.lineTo(xAxis, height - padding);
                 ctx.stroke();
             }
-            
+
             // Dibujar función
             ctx.strokeStyle = '#2563eb';
             ctx.lineWidth = 2;
             ctx.beginPath();
-            
+
             let firstPoint = true;
-            const step = (xMax - xMin) / 500;
-            
-            for (let x = xMin; x <= xMax; x += step) {
+            const plotStep = (xMax - xMin) / 500;
+
+            for (let x = xMin; x <= xMax; x += plotStep) {
                 try {
                     const y = evaluateFunction(func, x);
                     if (isFinite(y)) {
                         const sx = toScreenX(x);
                         const sy = toScreenY(y);
-                        
+
                         if (firstPoint) {
                             ctx.moveTo(sx, sy);
                             firstPoint = false;
@@ -1167,18 +1283,18 @@
                 }
             }
             ctx.stroke();
-            
+
             // Dibujar puntos de iteración
             if (result && result.iterations) {
-                result.iterations.forEach((iter, index) => {
+                result.iterations.forEach(function(iter, index) {
                     if (iter.xCurr !== null) {
                         const sx = toScreenX(iter.xCurr);
-                        const sy = toScreenY(iter.fX);
-                        
+                        const sy = toScreenY(iter.fXCurr);
+
                         // Círculo
                         ctx.beginPath();
                         ctx.arc(sx, sy, 6, 0, 2 * Math.PI);
-                        
+
                         if (index === currentStep || (currentStep === 0 && index === 0)) {
                             ctx.fillStyle = '#ef4444';
                         } else {
@@ -1188,21 +1304,21 @@
                         ctx.strokeStyle = '#fff';
                         ctx.lineWidth = 2;
                         ctx.stroke();
-                        
+
                         // Etiqueta
                         ctx.fillStyle = textColor;
                         ctx.font = '12px Segoe UI';
                         ctx.textAlign = 'center';
-                        ctx.fillText(`x${iter.iteration}`, sx, sy - 10);
+                        ctx.fillText('x' + iter.iteration, sx, sy - 10);
                     }
                 });
             }
-            
+
             // Dibujar raíz encontrada
             if (result && result.root !== null) {
                 const sx = toScreenX(result.root);
                 const sy = toScreenY(0);
-                
+
                 // Línea vertical hasta la raíz
                 ctx.strokeStyle = '#ef4444';
                 ctx.lineWidth = 2;
@@ -1212,7 +1328,7 @@
                 ctx.lineTo(sx, sy);
                 ctx.stroke();
                 ctx.setLineDash([]);
-                
+
                 // Punto en el eje X
                 ctx.beginPath();
                 ctx.arc(sx, sy, 8, 0, 2 * Math.PI);
@@ -1221,7 +1337,7 @@
                 ctx.strokeStyle = '#fff';
                 ctx.lineWidth = 2;
                 ctx.stroke();
-                
+
                 // Etiqueta
                 ctx.fillStyle = textColor;
                 ctx.font = 'bold 14px Segoe UI';
@@ -1230,7 +1346,7 @@
                 ctx.font = '12px Segoe UI';
                 ctx.fillText(formatNumber(result.root), sx, sy + 20);
             }
-            
+
             // Etiquetas de ejes
             ctx.fillStyle = textColor;
             ctx.font = '12px Segoe UI';
@@ -1246,11 +1362,11 @@
                 alert('No hay datos para exportar. Primero realiza un cálculo.');
                 return;
             }
-            
+
             try {
                 // Crear libro de trabajo
                 const wb = XLSX.utils.book_new();
-                
+
                 // Datos para la hoja de iteraciones
                 const wsData = [
                     ['Método de la Secante - Resultados'],
@@ -1260,47 +1376,51 @@
                     ['Tolerancia:', toleranceInput.value],
                     ['Máx. Iteraciones:', maxIterationsInput.value],
                     [],
-                    ['Iteración', 'xₙ₋₁', 'xₙ', 'f(xₙ)', 'Error Absoluto']
+                    ['i', 'xₙ₋₁', 'xₙ', 'xₙ₊₁', 'f(xₙ₋₁)', 'f(xₙ)', 'Error']
                 ];
-                
-                iterationsData.forEach(iter => {
+
+                iterationsData.forEach(function(iter) {
                     wsData.push([
                         iter.iteration,
                         iter.xPrev !== null ? iter.xPrev : '',
                         iter.xCurr,
-                        iter.fX,
+                        iter.xNext !== null ? iter.xNext : '',
+                        iter.fXPrev,
+                        iter.fXCurr,
                         iter.error !== null ? iter.error : ''
                     ]);
                 });
-                
+
                 wsData.push([]);
                 wsData.push(['Raíz encontrada:', rootFound]);
                 wsData.push(['f(Raíz):', evaluateFunction(functionInput.value, rootFound)]);
-                wsData.push(['Iteraciones totales:', iterationsData.length - 1]);
-                
+                wsData.push(['Iteraciones totales:', iterationsData.length]);
+
                 // Crear hoja de trabajo
                 const ws = XLSX.utils.aoa_to_sheet(wsData);
-                
+
                 // Ajustar ancho de columnas
                 ws['!cols'] = [
-                    { wch: 12 },
+                    { wch: 8 },
+                    { wch: 15 },
+                    { wch: 15 },
                     { wch: 15 },
                     { wch: 15 },
                     { wch: 15 },
                     { wch: 15 }
                 ];
-                
+
                 // Agregar hoja al libro
                 XLSX.utils.book_append_sheet(wb, ws, 'Resultados');
-                
+
                 // Generar nombre de archivo con fecha
                 const now = new Date();
                 const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, -5);
-                const filename = `Secante_Resultados_${timestamp}.xlsx`;
-                
+                const filename = 'Secante_Resultados_' + timestamp + '.xlsx';
+
                 // Descargar archivo
                 XLSX.writeFile(wb, filename);
-                
+
             } catch (error) {
                 alert('Error al exportar: ' + error.message);
                 console.error(error);
